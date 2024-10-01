@@ -16,8 +16,8 @@ export default function ContactForm(): JSX.Element {
   const { enqueueSnackbar } = useSnackbar();
 
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    name: "",
+    subject: "",
     email: "",
     phone: "",
     message: "",
@@ -32,48 +32,85 @@ export default function ContactForm(): JSX.Element {
     });
   };
 
-  const sendEmail = async (e: React.FormEvent) => {
+  // const sendEmail = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setIsSending(true);
+
+  //   try {
+  //     const res = await emailjs.send(
+  //       "service_qzgq94s", // Replace with your EmailJS service ID
+  //       "template_t3djn0f", // Replace with your EmailJS template ID
+  //       {
+  //         firstName: formData.firstName,
+  //         lastName: formData.lastName,
+  //         email: formData.email,
+  //         phone: formData.phone,
+  //         message: formData.message,
+  //       },
+  //       "th0A-KVSYM9GlnJTc" // Replace with your EmailJS user ID
+  //     );
+
+  //     console.log("RES", res);
+
+  //     enqueueSnackbar("Message sent successfully,Thank You!", {
+  //       variant: "success",
+  //       autoHideDuration: 3000,
+  //     });
+  //     setFormData({
+  //       firstName: "",
+  //       lastName: "",
+  //       email: "",
+  //       phone: "",
+  //       message: "",
+  //     });
+  //   } catch (error) {
+  //     enqueueSnackbar("Error while sending the message.", {
+  //       variant: "error",
+  //       autoHideDuration: 3000,
+  //     });
+  //     console.error("EmailJS error:", error);
+  //   } finally {
+  //     setIsSending(false);
+  //   }
+  // };
+
+  const sendEmail = async(e: React.FormEvent)=>{
     e.preventDefault();
-    setIsSending(true);
-
-    try {
-      const res = await emailjs.send(
-        "service_qzgq94s", // Replace with your EmailJS service ID
-        "template_t3djn0f", // Replace with your EmailJS template ID
-        {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-          message: formData.message,
-        },
-        "th0A-KVSYM9GlnJTc" // Replace with your EmailJS user ID
-      );
-
-      console.log("RES", res);
-
+    try{
+      setIsSending(true);
+      const res = await fetch('http://localhost:4000/contactForm',{
+        method:'POST',
+        headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+      })
       enqueueSnackbar("Message sent successfully,Thank You!", {
-        variant: "success",
-        autoHideDuration: 3000,
-      });
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        message: "",
-      });
-    } catch (error) {
-      enqueueSnackbar("Error while sending the message.", {
-        variant: "error",
-        autoHideDuration: 3000,
-      });
-      console.error("EmailJS error:", error);
-    } finally {
-      setIsSending(false);
-    }
-  };
+              variant: "success",
+              autoHideDuration: 3000,
+            });
 
+    }catch(error){
+      console.log(error)
+      enqueueSnackbar("Error while sending the message.", {
+              variant: "error",
+              autoHideDuration: 3000,
+            });
+    }
+    finally{
+      setIsSending(false)
+           setFormData({
+              name: "",
+              subject: "",
+              email: "",
+              phone: "",
+              message: "",
+            });
+    }
+   
+
+    
+  }
   return (
     <Box sx={{ padding: "60px" }}>
       <form onSubmit={sendEmail}>
@@ -90,11 +127,11 @@ export default function ContactForm(): JSX.Element {
           }}
         >
           <TextField
-            id="firstName"
-            label="First Name"
+            id="name"
+            label="Name"
             variant="standard"
             fullWidth={isSmallScreen}
-            value={formData.firstName}
+            value={formData.name}
             onChange={handleInputChange}
             required
             sx={{
@@ -109,11 +146,11 @@ export default function ContactForm(): JSX.Element {
             }}
           />
           <TextField
-            id="lastName"
-            label="Last Name"
+            id="subject"
+            label="Subject"
             variant="standard"
             fullWidth={isSmallScreen}
-            value={formData.lastName}
+            value={formData.subject}
             onChange={handleInputChange}
             required
             sx={{
