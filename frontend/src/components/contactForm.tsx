@@ -9,6 +9,7 @@ import {
 import { useState } from "react";
 import emailjs from "@emailjs/browser";
 import { useSnackbar } from "notistack";
+import { LoadingButton } from '@mui/lab';
 
 export default function ContactForm(): JSX.Element {
   const theme = useTheme();
@@ -78,17 +79,25 @@ export default function ContactForm(): JSX.Element {
     e.preventDefault();
     try{
       setIsSending(true);
-      const res = await fetch('http://localhost:4000/contactForm',{
+      const res = await fetch('/api/contactForm',{
         method:'POST',
         headers: {
           'Content-Type': 'application/json',
       },
       body: JSON.stringify(formData),
       })
+      if(res.ok){
       enqueueSnackbar("Message sent successfully,Thank You!", {
               variant: "success",
               autoHideDuration: 3000,
             });
+          }
+          else{
+            enqueueSnackbar("Error while sending the message.", {
+              variant: "error",
+              autoHideDuration: 3000,
+            });
+          }
 
     }catch(error){
       console.log(error)
@@ -246,12 +255,14 @@ export default function ContactForm(): JSX.Element {
             alignItems: "center",
           }}
         >
-          <Button
+         <LoadingButton
             type="submit"
+            loading={isSending}
             variant="contained"
-            size="small"
+            loadingPosition="start"
+            fullWidth
             sx={{
-              backgroundColor: "black",
+              backgroundColor: isSending ? "#666" : "black",
               color: "white",
               mt: 4,
               paddingY: "12px",
@@ -260,14 +271,14 @@ export default function ContactForm(): JSX.Element {
               "&.Mui-disabled": {
                 backgroundColor: "#666", // Style for disabled state
               },
-              "&.hover": {
-                backgroundColor: "#333",
+              "&:hover": {
+                backgroundColor: isSending ? "#666" : "#333", // Disable hover effect if loading
               },
             }}
             disabled={isSending}
           >
             {isSending ? "Sending..." : "Send Message"}
-          </Button>
+          </LoadingButton>
         </Box>
       </form>
     </Box>

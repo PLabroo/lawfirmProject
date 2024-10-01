@@ -8,7 +8,7 @@ const config: UserConfig = {
         '/api': {
             target: 'http://localhost:4000', // Your backend server URL
             changeOrigin: true,
-            // rewrite: (path) => path.replace(/^\/api/, ''), // Optional: rewrite the path if needed
+            rewrite: (path) => path.replace(/^\/api/, ''), // Optional: rewrite the path if needed
         },
     },
 },
