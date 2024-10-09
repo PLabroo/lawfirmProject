@@ -72,7 +72,7 @@ export default function Header(): JSX.Element {
     <>
       <Box
         sx={{
-          position: isScrolled ? "fixed" : "relative", // Fixed after scroll
+          position: isScrolled || landingPagePathname !== "/" ? "fixed" : "relative", // Fixed after scroll
           top: 0,
           width: "100%",
           backgroundColor:

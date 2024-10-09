@@ -45,7 +45,7 @@ export default function Contact(): JSX.Element {
           opacity: inView ? 1 : 0,
           transform: inView ? "translateY(0)" : "translateY(-200px)",
           transition: "opacity 0.6s ease-out, transform 0.8s ease-in-out",
-          mt: 4,
+          mt: 12,
         }}
       >
         <Typography

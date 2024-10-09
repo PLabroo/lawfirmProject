@@ -65,7 +65,7 @@ export default function Team(): JSX.Element {
   return (
     <>
       <Header />
-      <Box sx={{ backgroundColor: "#E8E8E8", px: 4 }}>
+      <Box sx={{ backgroundColor: "#E8E8E8", px: 4,py:10 }}>
         <Box sx={{ textAlign: "center", py: 4 }}>
           <Typography
             variant="h1"

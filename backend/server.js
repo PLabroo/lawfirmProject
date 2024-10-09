@@ -4,6 +4,7 @@ const express = require('express');
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const connectDB = require('./db');
 require('dotenv').config();
 
 const app = express();
@@ -16,8 +17,16 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+connectDB();
+
+const loginRoutes = require('./routes/loginRoutes');
+app.use('/auth',loginRoutes);
+
 const contactRoutes = require('./routes/contactRoutes');
+const errorMiddleware = require('./middleware/errorMiddleware');
 app.use('/contactForm', contactRoutes); // Main route for contact form
+
+app.use(errorMiddleware)
 
 // Start the server
 app.listen(PORT, () => {

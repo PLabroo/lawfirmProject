@@ -66,6 +66,8 @@ export default function ContactForm(): JSX.Element {
         initialValues={initialValues}
         validationSchema={validationSchema}
         onSubmit={sendEmail}
+        validateOnChange={false}
+        validateOnBlur={false}
       >
         {({ isSubmitting,errors }) => {
           const errorsLength = Object.keys(errors).length>0;
