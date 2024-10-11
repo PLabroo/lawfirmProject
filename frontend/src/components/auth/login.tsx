@@ -1,12 +1,15 @@
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { LoadingButton } from "@mui/lab";
-import { Box, IconButton, InputAdornment, TextField, Typography } from "@mui/material";
+import { IconButton, InputAdornment, TextField } from "@mui/material";
 import { Field, Form, Formik } from "formik";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import * as Yup from "yup";
 
 export default function Login(): JSX.Element {
+
+  const navigate = useNavigate();
   // Validation schema using Yup
   const validationSchema = Yup.object({
     email: Yup.string()
@@ -27,12 +30,13 @@ export default function Login(): JSX.Element {
       })
 
       const data = await loginRes.json();
-      console.log('data',data)
       if(data?.isSuccess){
       enqueueSnackbar(`Logged In Successfully!!`, {
         variant: "success",
         autoHideDuration: 3000,
       })
+
+      navigate("/createArticle");
     }
     else{
         enqueueSnackbar(`${data?.message}`, {

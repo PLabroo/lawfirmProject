@@ -23,8 +23,12 @@ const loginRoutes = require('./routes/loginRoutes');
 app.use('/auth',loginRoutes);
 
 const contactRoutes = require('./routes/contactRoutes');
+const articleRoutes = require('./routes/articleRoutes');
+
 const errorMiddleware = require('./middleware/errorMiddleware');
+
 app.use('/contactForm', contactRoutes); // Main route for contact form
+app.use('/create', articleRoutes);
 
 app.use(errorMiddleware)
 
