@@ -5,17 +5,19 @@ import * as Yup from "yup";
 import FileUpload from "../fileUpload";
 import { useState } from "react";
 import { enqueueSnackbar } from "notistack";
+import { Navigate } from "react-router-dom";
 
 interface ArticleFormValues {
-    title: string;
-    description: string;
-    author: string;
-    category: string;
-    content: string;
+  title: string;
+  description: string;
+  author: string;
+  category: string;
+  content: string;
 }
 export default function CreateBlog() {
-
-const [fileUploaded,setFileUploaded]=useState<File|null>(null);
+  const token = localStorage.getItem("token");
+  const [fileUploaded, setFileUploaded] = useState<File | null>(null);
+  const [file, setFile] = useState<File | null>(null);
 
   const validationSchema = Yup.object({
     title: Yup.string().required("Title is required"),
@@ -25,52 +27,66 @@ const [fileUploaded,setFileUploaded]=useState<File|null>(null);
     content: Yup.string().required("Content is required"),
   });
 
-  const handleSubmit = async (values: ArticleFormValues,{resetForm}:any) => {
+  const handleSubmit = async (
+    values: ArticleFormValues,
+    { resetForm }: any
+  ) => {
     const formData = new FormData();
-    
-    Object.keys(values).forEach((key: string) => {
-        if (key in values) {
-            formData.append(key,values[key as keyof ArticleFormValues]);
-        }
-    });
 
+    Object.keys(values).forEach((key: string) => {
+      if (key in values) {
+        formData.append(key, values[key as keyof ArticleFormValues]);
+      }
+    });
 
     // Append the uploaded image if it exists
     if (fileUploaded) {
-        formData.append('image', fileUploaded);
+      formData.append("image", fileUploaded);
     }
-
 
     try {
-        const articleCreationRes = await fetch('/api/create', {
-            method:'POST',
-            body: formData,
-        });
+      const articleCreationRes = await fetch("/api/create", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
 
-        const data = await articleCreationRes.json();
-        if(data?.isSuccess){
-          enqueueSnackbar(`Article submitted Successfully!!`, {
-            variant: "success",
-            autoHideDuration: 3000,
-          })
-        }
-        else{
-          enqueueSnackbar(`${data?.message}`, {
-            variant: "error",
-            autoHideDuration: 3000,
-          });
-        }
-    } catch (error) {
-        enqueueSnackbar(`Article Submission Failed!!`, {
+      if(articleCreationRes.status===401 || articleCreationRes.status===403){
+        enqueueSnackbar(`Your session expired.Please Login again!!`, {
           variant: "error",
           autoHideDuration: 3000,
-        })
-    }finally{
+        });
+        localStorage.removeItem("token");
+        return <Navigate to="/auth" />
+      }
+      
+      const data = await articleCreationRes.json();
+      if (data?.isSuccess) {
+        enqueueSnackbar(`Article submitted Successfully!!`, {
+          variant: "success",
+          autoHideDuration: 3000,
+        });
+      } else {
+        enqueueSnackbar(`${data?.message}`, {
+          variant: "error",
+          autoHideDuration: 3000,
+        });
+      }
+    } catch (error) {
+      enqueueSnackbar(`Article Submission Failed!!`, {
+        variant: "error",
+        autoHideDuration: 3000,
+      });
+    } finally {
       resetForm();
+      setFileUploaded(null);
+      setFile(null);
     }
-};
+  };
 
-  return (
+  return token ? (
     <Box>
       <Box
         component={"img"}
@@ -284,7 +300,7 @@ const [fileUploaded,setFileUploaded]=useState<File|null>(null);
                         <Typography
                           variant="overline_400"
                           color="error"
-                          sx={{ml:1,fontWeight:500}}
+                          sx={{ ml: 1, fontWeight: 500 }}
                         >
                           {errors.content}
                         </Typography>
@@ -295,7 +311,11 @@ const [fileUploaded,setFileUploaded]=useState<File|null>(null);
 
                 {/* upload preview image */}
 
-                <FileUpload setFileUploaded = {setFileUploaded}/>
+                <FileUpload
+                  setFileUploaded={setFileUploaded}
+                  file={file}
+                  setFile={setFile}
+                />
 
                 <LoadingButton
                   type="submit"
@@ -328,5 +348,7 @@ const [fileUploaded,setFileUploaded]=useState<File|null>(null);
         </Box>
       </Box>
     </Box>
+  ) : (
+    <Navigate to="/auth" />
   );
 }

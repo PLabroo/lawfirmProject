@@ -16,7 +16,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // Contact form submission handler
-exports.sendContactForm = async (req, res) => {
+exports.sendContactForm = async (req, res,next) => {
     const { name, email,phone, subject, message } = req.body;
 
     const mailOptions = {
@@ -35,7 +35,6 @@ exports.sendContactForm = async (req, res) => {
         await transporter.sendMail(mailOptions);
         res.status(200).send({ message: 'Message sent successfully!' });
     } catch (error) {
-        console.error(error);
-        res.status(500).send({ message: 'Error sending message.' });
+        next(error);
     }
 };

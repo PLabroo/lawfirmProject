@@ -36,7 +36,11 @@ export default function Login(): JSX.Element {
         autoHideDuration: 3000,
       })
 
-      navigate("/createArticle");
+      localStorage.setItem("token", data?.token);
+
+      if(data?.token){
+        navigate("/createArticle");
+      }
     }
     else{
         enqueueSnackbar(`${data?.message}`, {

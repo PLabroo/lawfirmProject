@@ -25,3 +25,16 @@ exports.createArticle = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getAllArticles = async (req, res, next) => {
+  try {
+    const article = await Article.find().sort({ date: -1 });
+    res.status(200).json({
+      isSuccess: true,
+      message: "Articles fetched successfully",
+      article,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

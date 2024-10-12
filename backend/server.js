@@ -1,7 +1,6 @@
 // server.js
 
 const express = require('express');
-const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const connectDB = require('./db');
@@ -20,15 +19,15 @@ app.use(bodyParser.urlencoded({ extended: true }));
 connectDB();
 
 const loginRoutes = require('./routes/loginRoutes');
-app.use('/auth',loginRoutes);
-
 const contactRoutes = require('./routes/contactRoutes');
 const articleRoutes = require('./routes/articleRoutes');
-
 const errorMiddleware = require('./middleware/errorMiddleware');
 
-app.use('/contactForm', contactRoutes); // Main route for contact form
+
+app.use('/auth',loginRoutes);
+app.use('/contactForm', contactRoutes); 
 app.use('/create', articleRoutes);
+app.use('/articlesList', articleRoutes);
 
 app.use(errorMiddleware)
 

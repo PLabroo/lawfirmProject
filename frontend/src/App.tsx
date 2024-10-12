@@ -1,4 +1,3 @@
-import { Typography } from "@mui/material";
 import "./App.css";
 import AppRoutes from "./routes";
 import { BrowserRouter } from "react-router-dom";
