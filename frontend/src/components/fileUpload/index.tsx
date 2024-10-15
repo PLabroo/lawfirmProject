@@ -27,7 +27,7 @@ const FileUpload = ({
   };
 
   return (
-    <Box sx={{ mt: 2 }}>
+    <Box sx={{ mt: 4 }}>
       <input
         accept="image/*" // Accept only image files
         type="file"

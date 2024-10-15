@@ -1,11 +1,19 @@
 import { LoadingButton } from "@mui/lab";
-import { Box, TextareaAutosize, TextField, Typography } from "@mui/material";
-import { Field, Form, Formik } from "formik";
+import {
+  Box,
+  Button,
+  TextareaAutosize,
+  TextField,
+  Theme,
+  Typography,
+} from "@mui/material";
+import { Field, Form, Formik, FormikValues } from "formik";
 import * as Yup from "yup";
 import FileUpload from "../fileUpload";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { enqueueSnackbar } from "notistack";
 import { Navigate } from "react-router-dom";
+import { Editor } from "@tinymce/tinymce-react";
 
 interface ArticleFormValues {
   title: string;
@@ -16,21 +24,34 @@ interface ArticleFormValues {
 }
 export default function CreateBlog() {
   const token = localStorage.getItem("token");
+  const expiryTime = Number(localStorage.getItem("expiryTime"));
+  const currentTime = Date.now();
+
   const [fileUploaded, setFileUploaded] = useState<File | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const editorRef = useRef<any>(null);
 
   const validationSchema = Yup.object({
     title: Yup.string().required("Title is required"),
     description: Yup.string().required("Short description is required"),
     author: Yup.string().required("Author name is required"),
     category: Yup.string().required("Category is required"),
-    content: Yup.string().required("Content is required"),
   });
+
+  const timeCheck = currentTime>expiryTime;
 
   const handleSubmit = async (
     values: ArticleFormValues,
-    { resetForm }: any
+    { resetForm,setFieldError }: any
   ) => {
+    if (editorRef.current) {
+      const content = editorRef.current.getContent();
+      if (!content) {
+        setFieldError('content', 'Content is required'); // Set error in Formik
+        return; // Prevent form submission
+      }
+      values.content = content; // Assign the content to values
+    }
     const formData = new FormData();
 
     Object.keys(values).forEach((key: string) => {
@@ -53,15 +74,19 @@ export default function CreateBlog() {
         body: formData,
       });
 
-      if(articleCreationRes.status===401 || articleCreationRes.status===403){
+      if (
+        articleCreationRes.status === 401 ||
+        articleCreationRes.status === 403
+      ) {
         enqueueSnackbar(`Your session expired.Please Login again!!`, {
           variant: "error",
           autoHideDuration: 3000,
         });
         localStorage.removeItem("token");
-        return <Navigate to="/auth" />
+        localStorage.removeItem("expiryTime")
+        return <Navigate to="/auth" />;
       }
-      
+
       const data = await articleCreationRes.json();
       if (data?.isSuccess) {
         enqueueSnackbar(`Article submitted Successfully!!`, {
@@ -83,10 +108,12 @@ export default function CreateBlog() {
       resetForm();
       setFileUploaded(null);
       setFile(null);
+      editorRef.current?.setContent("");
     }
   };
 
-  return token ? (
+
+  return (token && !timeCheck) ? (
     <Box>
       <Box
         component={"img"}
@@ -119,7 +146,7 @@ export default function CreateBlog() {
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
           >
-            {({ isSubmitting, errors, touched }) => (
+            {({ isSubmitting, errors, touched,setFieldValue }) => (
               <Form>
                 {/* email */}
                 <Field name="title">
@@ -272,7 +299,7 @@ export default function CreateBlog() {
                 </Field>
 
                 {/* Content */}
-                <Field name="content">
+                {/* <Field name="content">
                   {({ field }: { field: any }) => (
                     <>
                       <TextareaAutosize
@@ -307,7 +334,71 @@ export default function CreateBlog() {
                       )}
                     </>
                   )}
-                </Field>
+                </Field> */}
+
+                <Editor
+                  tinymceScriptSrc="/tinymce/tinymce.min.js"
+                  licenseKey="gpl"
+                  onInit={(_evt, editor) => (editorRef.current = editor)}
+                  initialValue="<p>This is the initial content of the editor.</p>"
+                  init={{
+                    height: 500,
+                    menubar: false,
+                    plugins: [
+                      "advlist",
+                      "autolink",
+                      "lists",
+                      "link",
+                      "image",
+                      "charmap",
+                      "anchor",
+                      "searchreplace",
+                      "visualblocks",
+                      "code",
+                      "fullscreen",
+                      "insertdatetime",
+                      "media",
+                      "table",
+                      "preview",
+                      "help",
+                      "wordcount",
+                    ],
+                    toolbar:
+                      "undo redo | blocks | " +
+                      "bold italic forecolor | alignleft aligncenter " +
+                      "alignright alignjustify | bullist numlist outdent indent | " +
+                      "removeformat | help",
+                    content_style:
+                      "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                  }}
+                />
+                {/* <Button
+                  variant="text" // Use 'text' variant to remove border
+                  onClick={()=>saveArticle(setFieldValue)}
+                  sx={(theme:Theme)=>({
+                    color: "white",
+                    padding: "4px 6px",
+                    borderRadius: "5px",
+                    mt: 2,
+                    cursor: "pointer", // Ensure cursor is a pointer
+                    backgroundColor: "black",
+                    "&:hover": {
+                      backgroundColor: "black", // Disable hover effect
+                      color:'white'
+                    }
+                  })}
+                >
+                  <Typography variant="body_500">Save Article</Typography>
+                </Button> */}
+                {!!errors.content && touched.content && (
+                  <Typography
+                    variant="overline_400"
+                    color="error"
+                    sx={{ ml: 1,mt:1, fontWeight: 500 }}
+                  >
+                    {errors.content}
+                  </Typography>
+                )}
 
                 {/* upload preview image */}
 
@@ -326,7 +417,7 @@ export default function CreateBlog() {
                   sx={{
                     backgroundColor: isSubmitting ? "#666" : "black",
                     color: "white",
-                    mt: 2,
+                    mt: 4,
                     paddingY: "12px",
                     fontSize: "14px",
                     minWidth: "auto",

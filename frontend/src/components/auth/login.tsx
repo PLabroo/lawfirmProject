@@ -37,6 +37,7 @@ export default function Login(): JSX.Element {
       })
 
       localStorage.setItem("token", data?.token);
+      localStorage.setItem("expiryTime",data?.expirationTime);
 
       if(data?.token){
         navigate("/createArticle");

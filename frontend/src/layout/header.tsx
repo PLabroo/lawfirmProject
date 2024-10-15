@@ -27,8 +27,8 @@ export default function Header(): JSX.Element {
       to: "/career",
     },
     {
-      title: "About",
-      to: "/about",
+      title: "Blogs",
+      to: "/blogs",
     },
     {
       title: "Team",

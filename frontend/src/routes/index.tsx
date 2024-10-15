@@ -9,8 +9,8 @@ import Contact from "../components/contact";
 import { useEffect } from "react";
 import Team from "../components/team";
 import Auth from "../components/auth";
-import Articles from "../components/articles";
 import CreateBlog from "../components/createArticle";
+import Blogs from "../components/blogs";
 
 export default function AppRoutes(): JSX.Element {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ export default function AppRoutes(): JSX.Element {
         <Route path="/team" element={<Team />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/createArticle" element={<CreateBlog />} />
-        <Route path="/blogs" element={<Articles />} />
+        <Route path="/blogs" element={<Blogs />} />
       </Routes>
   );
 }
