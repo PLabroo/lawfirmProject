@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { Button, Typography, Box, Theme } from "@mui/material";
+import {
+  Button,
+  Typography,
+  Box,
+  Theme,
+  CircularProgress,
+} from "@mui/material";
+import { enqueueSnackbar } from "notistack";
+import { Form, Navigate } from "react-router-dom";
+import { LoadingButton } from "@mui/lab";
 
 const FileUpload = ({
   setFileUploaded,
@@ -11,19 +20,107 @@ const FileUpload = ({
   setFileUploaded: React.Dispatch<React.SetStateAction<File | null>>;
 }) => {
   const [previewUrl, setPreviewUrl] = useState("");
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [deleteId,setDeleteId] = useState("");
+  const token = localStorage.getItem("token");
+
+
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const selectedFile = event.target.files?.[0];
+    const fileData = new FormData();
     if (selectedFile) {
-      setFile(selectedFile);
-      setPreviewUrl(URL.createObjectURL(selectedFile));
-      setFileUploaded(selectedFile);
+      fileData.append("image", selectedFile);
+      try {
+        setLoading(true);
+        const uploadImgRes = await fetch("/api/file/uploadFile", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: fileData,
+        });
+
+        if (uploadImgRes.status === 401 || uploadImgRes.status === 403) {
+          enqueueSnackbar(`Your session expired.Please Login again!!`, {
+            variant: "error",
+            autoHideDuration: 3000,
+          });
+          localStorage.removeItem("token");
+          localStorage.removeItem("expiryTime");
+          return <Navigate to="/auth" />;
+        }
+
+        const data = await uploadImgRes.json();
+        if (data?.link) {
+          setFile(selectedFile);
+          setPreviewUrl(URL.createObjectURL(selectedFile));
+          setFileUploaded(selectedFile);
+          setDeleteId(data?.data?.deletehash);
+          enqueueSnackbar(`${data?.message}`, {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+        } else {
+          enqueueSnackbar(`${data?.message}`, {
+            variant: "error",
+            autoHideDuration: 3000,
+          });
+        }
+      } catch (error) {
+        enqueueSnackbar(`Uploading File Failed.${error}`, {
+          variant: "error",
+          autoHideDuration: 3000,
+        });
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
-  const handleDelete = () => {
-    setFile(null); // Clear the selected file
-    setPreviewUrl(""); // Clear the preview URL
-    setFileUploaded(null);
+  const handleDelete = async () => {
+    try {
+      const deleteImage = await fetch(`/api/file/deleteFile/${deleteId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (deleteImage.status === 401 || deleteImage.status === 403) {
+        enqueueSnackbar(`Your session expired.Please Login again!!`, {
+          variant: "error",
+          autoHideDuration: 3000,
+        });
+        localStorage.removeItem("token");
+        localStorage.removeItem("expiryTime");
+        return <Navigate to="/auth" />;
+      }
+
+      const data = await deleteImage.json();
+
+      if (data?.isSuccess) {
+        setFile(null);
+        setPreviewUrl("");
+        setFileUploaded(null);
+        enqueueSnackbar(`${data?.message}`, {
+          variant: "success",
+          autoHideDuration: 3000,
+        });
+      } else {
+        enqueueSnackbar(`${data?.message}`, {
+          variant: "error",
+          autoHideDuration: 3000,
+        });
+      }
+    } catch (error) {
+      enqueueSnackbar(`File Deletion failed.${error}`, {
+        variant: "error",
+        autoHideDuration: 3000,
+      });
+    }
   };
 
   return (
@@ -35,7 +132,30 @@ const FileUpload = ({
         style={{ display: "none" }} // Hide the default input
         id="file-upload"
       />
-      {!file && (
+      {loading && !file && (
+        <label htmlFor="file-upload">
+          <Button
+            component="span"
+            sx={{
+              ":hover": { backgroundColor: "transparent" },
+              border: "1px solid black",
+            }}
+          >
+            <CircularProgress size={20} color="secondary" />
+            <Typography
+              variant="body_500"
+              sx={(theme: Theme) => ({
+                color: theme.palette.text.primary,
+                ml: 1,
+                ":hover": { opacity: 0.8 },
+              })}
+            >
+              Uploading Image...
+            </Typography>
+          </Button>
+        </label>
+      )}
+      {!loading && !file && (
         <label htmlFor="file-upload">
           <Button
             component="span"

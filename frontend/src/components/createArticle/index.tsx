@@ -24,7 +24,7 @@ interface ArticleFormValues {
 }
 export default function CreateBlog() {
   const token = localStorage.getItem("token");
-  const expiryTime = Number(localStorage.getItem("expiryTime"));
+  const expiryTime = localStorage.getItem("expiryTime")==='null'?0:Number(localStorage.getItem("expiryTime")) ;
   const currentTime = Date.now();
 
   const [fileUploaded, setFileUploaded] = useState<File | null>(null);
@@ -42,7 +42,7 @@ export default function CreateBlog() {
 
   const handleSubmit = async (
     values: ArticleFormValues,
-    { resetForm,setFieldError }: any
+    { resetForm,setFieldError,setFieldValue }: any
   ) => {
     if (editorRef.current) {
       const content = editorRef.current.getContent();
@@ -51,6 +51,11 @@ export default function CreateBlog() {
         return; // Prevent form submission
       }
       values.content = content; // Assign the content to values
+    }
+
+    if(!file){
+      setFieldError('image','Please upload the image');
+      return;
     }
     const formData = new FormData();
 
@@ -93,6 +98,8 @@ export default function CreateBlog() {
           variant: "success",
           autoHideDuration: 3000,
         });
+        console.log("Image URL:", data.articles); // Log or use the image URL as needed
+
       } else {
         enqueueSnackbar(`${data?.message}`, {
           variant: "error",
@@ -100,7 +107,7 @@ export default function CreateBlog() {
         });
       }
     } catch (error) {
-      enqueueSnackbar(`Article Submission Failed!!`, {
+      enqueueSnackbar(`Article Submission Failed.${error}`, {
         variant: "error",
         autoHideDuration: 3000,
       });
@@ -108,6 +115,8 @@ export default function CreateBlog() {
       resetForm();
       setFileUploaded(null);
       setFile(null);
+      setFieldValue('image','');
+      setFieldValue('content','');
       editorRef.current?.setContent("");
     }
   };
@@ -142,6 +151,7 @@ export default function CreateBlog() {
               author: "",
               category: "",
               content: "",
+              image:null,
             }}
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
@@ -340,7 +350,6 @@ export default function CreateBlog() {
                   tinymceScriptSrc="/tinymce/tinymce.min.js"
                   licenseKey="gpl"
                   onInit={(_evt, editor) => (editorRef.current = editor)}
-                  initialValue="<p>This is the initial content of the editor.</p>"
                   init={{
                     height: 500,
                     menubar: false,
@@ -390,7 +399,7 @@ export default function CreateBlog() {
                 >
                   <Typography variant="body_500">Save Article</Typography>
                 </Button> */}
-                {!!errors.content && touched.content && (
+                {!!errors.content && (
                   <Typography
                     variant="overline_400"
                     color="error"
@@ -407,6 +416,15 @@ export default function CreateBlog() {
                   file={file}
                   setFile={setFile}
                 />
+                {!!errors.image && (
+                  <Typography
+                    variant="overline_400"
+                    color="error"
+                    sx={{ ml: 1,mt:1, fontWeight: 500 }}
+                  >
+                    {errors.image}
+                  </Typography>
+                )}
 
                 <LoadingButton
                   type="submit"

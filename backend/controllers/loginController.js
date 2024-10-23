@@ -25,7 +25,7 @@ exports.login = async (req, res, next) => {
       expiresIn,
     });
 
-    const expirationTime = (Math.floor(Date.now() / 1000) + 60)*1000;
+    const expirationTime = (Math.floor(Date.now() / 1000) + 60*60)*1000;
     res
       .status(200)
       .json({
