@@ -11,6 +11,7 @@ import Team from "../components/team";
 import Auth from "../components/auth";
 import CreateBlog from "../components/createArticle";
 import Blogs from "../components/blogs";
+import IndividualBlog from "../components/indBlog";
 
 export default function AppRoutes(): JSX.Element {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ export default function AppRoutes(): JSX.Element {
         <Route path="/auth" element={<Auth />} />
         <Route path="/createArticle" element={<CreateBlog />} />
         <Route path="/blogs" element={<Blogs />} />
+        <Route path="/blogs/:id" element={<IndividualBlog />} />
       </Routes>
   );
 }

@@ -15,14 +15,17 @@ import {
 } from "@mui/material";
 import { formatDate } from "../../utils";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 interface Article {
+  _id: string;
   title: string;
   description: string;
   author: string;
   category: string;
   image: string;
   date: string;
+  content:string;
 }
 interface ArticleListRes {
   isSuccess: boolean;
@@ -35,6 +38,7 @@ interface ArticleListRes {
 export default function Blogs() {
   const [loading, setLoading] = useState<boolean>(false);
   const [data, setData] = useState<ArticleListRes>({} as ArticleListRes);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchList = async () => {
@@ -53,12 +57,14 @@ export default function Blogs() {
   }, []);
 
   const firstArticle = {
+    id: data?.article?.[0]?._id,
     title: data?.article?.[0]?.title,
     description: data?.article?.[0]?.description,
     author: data?.article?.[0]?.author,
     category: data?.article?.[0]?.category,
     image: data?.article?.[0]?.image,
     date: data?.article?.[0]?.date,
+    content: data?.article?.[0]?.content,
   };
   return (
     <>
@@ -133,6 +139,11 @@ export default function Blogs() {
                   borderRadius: "15px",
                   objectFit: "cover",
                   cursor: "pointer",
+                }}
+                onClick={() => {
+                  navigate(`/blogs/${firstArticle?.id}`,{
+                    state:{...firstArticle}
+                  });
                 }}
               />
               <Box
@@ -263,6 +274,11 @@ export default function Blogs() {
                         },
                         cursor: "pointer",
                         boxShadow: "4px 4px 4px rgba(0,0,0,0.5)",
+                      }}
+                      onClick={() => {
+                        navigate(`/blogs/${article._id}`,{
+                          state:{...article}
+                        });
                       }}
                     >
                       <CardMedia sx={{ height: 200 }} image={article.image} title={article.image} />
