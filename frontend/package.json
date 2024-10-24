@@ -20,6 +20,7 @@
     "@tinymce/tinymce-react": "^5.1.1",
     "emailjs-com": "^3.2.0",
     "formik": "^2.4.6",
+    "framer-motion": "^11.11.9",
     "fs-extra": "^11.2.0",
     "notistack": "^3.0.1",
     "react": "^18.3.1",

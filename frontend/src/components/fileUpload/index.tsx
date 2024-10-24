@@ -11,16 +11,19 @@ import { Form, Navigate } from "react-router-dom";
 import { LoadingButton } from "@mui/lab";
 
 const FileUpload = ({
-  setFileUploaded,
   file,
   setFile,
+  link,
+  setLink,
 }: {
   file: File | null;
   setFile: React.Dispatch<React.SetStateAction<File | null>>;
-  setFileUploaded: React.Dispatch<React.SetStateAction<File | null>>;
+  link: string;
+  setLink: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const [previewUrl, setPreviewUrl] = useState("");
   const [loading, setLoading] = useState<boolean>(false);
+  const[fileDeletion,setFileDeletion] = useState<boolean>(false);
   const [deleteId,setDeleteId] = useState("");
   const token = localStorage.getItem("token");
 
@@ -57,8 +60,8 @@ const FileUpload = ({
         if (data?.link) {
           setFile(selectedFile);
           setPreviewUrl(URL.createObjectURL(selectedFile));
-          setFileUploaded(selectedFile);
           setDeleteId(data?.data?.deletehash);
+          setLink(data?.link);
           enqueueSnackbar(`${data?.message}`, {
             variant: "success",
             autoHideDuration: 3000,
@@ -82,6 +85,7 @@ const FileUpload = ({
 
   const handleDelete = async () => {
     try {
+      setFileDeletion(true);
       const deleteImage = await fetch(`/api/file/deleteFile/${deleteId}`, {
         method: "DELETE",
         headers: {
@@ -104,7 +108,6 @@ const FileUpload = ({
       if (data?.isSuccess) {
         setFile(null);
         setPreviewUrl("");
-        setFileUploaded(null);
         enqueueSnackbar(`${data?.message}`, {
           variant: "success",
           autoHideDuration: 3000,
@@ -120,6 +123,8 @@ const FileUpload = ({
         variant: "error",
         autoHideDuration: 3000,
       });
+    }finally{
+      setFileDeletion(false);
     }
   };
 
@@ -182,8 +187,31 @@ const FileUpload = ({
           </Button>
         </label>
       )}
+      {fileDeletion && file && (
+        <label htmlFor="file-upload">
+        <Button
+          component="span"
+          sx={{
+            ":hover": { backgroundColor: "transparent" },
+            border: "1px solid black",
+          }}
+        >
+          <CircularProgress size={20} color="secondary" />
+          <Typography
+            variant="body_500"
+            sx={(theme: Theme) => ({
+              color: theme.palette.text.primary,
+              ml: 1,
+              ":hover": { opacity: 0.8 },
+            })}
+          >
+            Deleting Image...
+          </Typography>
+        </Button>
+      </label>
+      )}
 
-      {file && (
+      {file && !loading && !fileDeletion && (
         <Box
           sx={{
             mt: 2,

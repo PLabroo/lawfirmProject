@@ -1,13 +1,10 @@
 import { LoadingButton } from "@mui/lab";
 import {
   Box,
-  Button,
-  TextareaAutosize,
   TextField,
-  Theme,
   Typography,
 } from "@mui/material";
-import { Field, Form, Formik, FormikValues } from "formik";
+import { Field, Form, Formik } from "formik";
 import * as Yup from "yup";
 import FileUpload from "../fileUpload";
 import { useRef, useState } from "react";
@@ -24,12 +21,15 @@ interface ArticleFormValues {
 }
 export default function CreateBlog() {
   const token = localStorage.getItem("token");
-  const expiryTime = localStorage.getItem("expiryTime")==='null'?0:Number(localStorage.getItem("expiryTime")) ;
+  const expiryTime =
+    localStorage.getItem("expiryTime") === "null"
+      ? 0
+      : Number(localStorage.getItem("expiryTime"));
   const currentTime = Date.now();
 
-  const [fileUploaded, setFileUploaded] = useState<File | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const editorRef = useRef<any>(null);
+  const [link, setLink] = useState<string>("");
 
   const validationSchema = Yup.object({
     title: Yup.string().required("Title is required"),
@@ -38,45 +38,38 @@ export default function CreateBlog() {
     category: Yup.string().required("Category is required"),
   });
 
-  const timeCheck = currentTime>expiryTime;
+  const timeCheck = currentTime > expiryTime;
 
   const handleSubmit = async (
     values: ArticleFormValues,
-    { resetForm,setFieldError,setFieldValue }: any
+    { resetForm, setFieldError, setFieldValue }: any
   ) => {
     if (editorRef.current) {
       const content = editorRef.current.getContent();
       if (!content) {
-        setFieldError('content', 'Content is required'); // Set error in Formik
+        setFieldError("content", "Content is required"); // Set error in Formik
         return; // Prevent form submission
       }
       values.content = content; // Assign the content to values
     }
 
-    if(!file){
-      setFieldError('image','Please upload the image');
+    if (!file) {
+      setFieldError("image", "Please upload the image");
       return;
     }
-    const formData = new FormData();
-
-    Object.keys(values).forEach((key: string) => {
-      if (key in values) {
-        formData.append(key, values[key as keyof ArticleFormValues]);
-      }
-    });
-
-    // Append the uploaded image if it exists
-    if (fileUploaded) {
-      formData.append("image", fileUploaded);
-    }
+    const payload = {
+      ...values,
+      image: link,
+    };
 
     try {
       const articleCreationRes = await fetch("/api/create", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        body: formData,
+        body: JSON.stringify(payload),
       });
 
       if (
@@ -88,7 +81,7 @@ export default function CreateBlog() {
           autoHideDuration: 3000,
         });
         localStorage.removeItem("token");
-        localStorage.removeItem("expiryTime")
+        localStorage.removeItem("expiryTime");
         return <Navigate to="/auth" />;
       }
 
@@ -99,7 +92,6 @@ export default function CreateBlog() {
           autoHideDuration: 3000,
         });
         console.log("Image URL:", data.articles); // Log or use the image URL as needed
-
       } else {
         enqueueSnackbar(`${data?.message}`, {
           variant: "error",
@@ -113,16 +105,14 @@ export default function CreateBlog() {
       });
     } finally {
       resetForm();
-      setFileUploaded(null);
       setFile(null);
-      setFieldValue('image','');
-      setFieldValue('content','');
+      setFieldValue("image", "");
+      setFieldValue("content", "");
       editorRef.current?.setContent("");
     }
   };
 
-
-  return (token && !timeCheck) ? (
+  return token && !timeCheck ? (
     <Box>
       <Box
         component={"img"}
@@ -151,12 +141,12 @@ export default function CreateBlog() {
               author: "",
               category: "",
               content: "",
-              image:null,
+              image: "",
             }}
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
           >
-            {({ isSubmitting, errors, touched,setFieldValue }) => (
+            {({ isSubmitting, errors, touched, setFieldValue }) => (
               <Form>
                 {/* email */}
                 <Field name="title">
@@ -403,7 +393,7 @@ export default function CreateBlog() {
                   <Typography
                     variant="overline_400"
                     color="error"
-                    sx={{ ml: 1,mt:1, fontWeight: 500 }}
+                    sx={{ ml: 1, mt: 1, fontWeight: 500 }}
                   >
                     {errors.content}
                   </Typography>
@@ -412,15 +402,16 @@ export default function CreateBlog() {
                 {/* upload preview image */}
 
                 <FileUpload
-                  setFileUploaded={setFileUploaded}
                   file={file}
                   setFile={setFile}
+                  link={link}
+                  setLink={setLink}
                 />
                 {!!errors.image && (
                   <Typography
                     variant="overline_400"
                     color="error"
-                    sx={{ ml: 1,mt:1, fontWeight: 500 }}
+                    sx={{ ml: 1, mt: 1, fontWeight: 500 }}
                   >
                     {errors.image}
                   </Typography>

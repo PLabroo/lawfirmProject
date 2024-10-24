@@ -29,6 +29,10 @@ export default function Login(): JSX.Element {
         body: JSON.stringify({ email, password }),
       })
 
+      if(loginRes.status===500){
+        throw new Error("Internal server error");
+      }
+
       const data = await loginRes.json();
       if(data?.isSuccess){
       enqueueSnackbar(`Logged In Successfully!!`, {
@@ -50,8 +54,7 @@ export default function Login(): JSX.Element {
         });
       }
     }catch(e){
-      console.log(e);
-      enqueueSnackbar(`User credentials wrong!!`, {
+      enqueueSnackbar(`${e}`, {
         variant: "error",
         autoHideDuration: 3000,
       });

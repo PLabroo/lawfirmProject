@@ -7,19 +7,17 @@ exports.createArticle = async (req, res, next) => {
       author: req.body.author,
       category: req.body.category,
       description: req.body.description,
-      image: {
-        data: req.file.buffer, // Store the binary data
-        contentType: req.file.mimetype, // Store the content type
-      },
+      image:req.body.image
     });
 
     await newArticle.save();
+    const articles = await Article.find().sort({ createdAt: -1 }); 
     res
       .status(201)
       .json({
         isSuccess: true,
         message: "Article created successfully",
-        newArticle,
+        articles,
       });
   } catch (error) {
     next(error);

@@ -71,7 +71,6 @@ exports.uploadFile = async (req, res, next) => {
 exports.deleteFile = async (req, res, next) => {
   try {
     const { deleteId } = req.params;
-
     const deleteImgRes = await fetch(
       `https://api.imgur.com/3/image/${deleteId}`,
       {
