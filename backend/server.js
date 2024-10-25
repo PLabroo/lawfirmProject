@@ -31,6 +31,7 @@ const contactRoutes = require('./routes/contactRoutes');
 const articleRoutes = require('./routes/articleRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const errorMiddleware = require('./middleware/errorMiddleware');
+const newsLetterRoutes = require('./routes/newsLetterRoutes');
 
 
 app.use('/auth',loginRoutes);
@@ -38,6 +39,7 @@ app.use('/contactForm', contactRoutes);
 app.use('/create', articleRoutes);
 app.use('/articlesList', articleRoutes);
 app.use('/file',uploadRoutes)
+app.use('/subscribeToNewsletter',newsLetterRoutes);
 
 app.use(errorMiddleware)
 
